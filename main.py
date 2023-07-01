@@ -3,7 +3,7 @@ import random
 
 GAME_WIDTH = 750
 GAME_HEIGHT = 550
-SPEED = 200
+SPEED = 170
 SPACE_SIZE = 50
 BODY_PARTS = 3
 SNAKE_COLOR = '#0000ff'
@@ -23,16 +23,17 @@ class Snake:
         for x, y in self.coordinates:
             square = canvas.create_rectangle(x, y, x + SPACE_SIZE,y + SPACE_SIZE, fill=SNAKE_COLOR, tag="string of snake")
             self.squares.append(square)
+
 class Food:
-    
-    def __init__(self) -> None:
-        x = random.randint(0, (GAME_HEIGHT/SPACE_SIZE)-1) * SPACE_SIZE
-        y = random.randint(0, (GAME_WIDTH/SPACE_SIZE)-1) * SPACE_SIZE
+    def __init__(self):
+        num_spaces_x = GAME_WIDTH // SPACE_SIZE
+        num_spaces_y = GAME_HEIGHT // SPACE_SIZE
         
-        self.coordinates = [x,y]
+        x = random.randint(0, num_spaces_x - 1) * SPACE_SIZE
+        y = random.randint(0, num_spaces_y - 1) * SPACE_SIZE
+        
+        self.coordinates = [x, y]
         canvas.create_oval(x, y, x + SPACE_SIZE, y + SPACE_SIZE, fill=FOOD_COLOR, tag="food")
-
-
 
 def next_turn(snake, food):
     #global SPEED
@@ -55,9 +56,10 @@ def next_turn(snake, food):
         
     if x == food.coordinates[0] and y == food.coordinates[1]:
         global score
-        
+        global SPEED
+    
         score += 1
-        
+        if SPEED > 40: SPEED -= 10
         label.config(text="Score: {}".format(score))
         
         canvas.delete("food")
@@ -125,8 +127,18 @@ def game_over():
     canvas.blit(display_restart, (170, 450))
     game_over = True
 
-def restart_game(event):
-    pass
+def restart_game():
+    global snake, food, score, direction
+
+    # Reset game variables to initial values
+    canvas.delete(ALL)
+    snake = Snake()
+    food = Food()
+    score = 0
+    direction = 'down'
+    label.config(text="Score:{}".format(score))
+    next_turn(snake, food)
+
 
 window = Tk()
 window.title('Snake Game')
@@ -134,6 +146,9 @@ window.resizable(True, True)
 
 score = 0
 direction = 'down'
+
+restart_button = Button(window, text="Restart", command=restart_game, font=('consolas', 20))
+restart_button.place(x=0, y=0)
 
 game_over = False
 
